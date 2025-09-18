@@ -237,7 +237,7 @@ class ApiClient {
    */
   async login(
     data: LoginRequest
-  ): Promise<ApiResponse<{ token: string; refreshToken: string; user: User }>> {
+  ): Promise<ApiResponse<{ accessToken: string; refreshToken: string; tokenType: string; expiresIn: number }>> {
     return this.request("/api/v1/auth/login", {
       method: "POST",
       body: JSON.stringify(data),
@@ -582,4 +582,4 @@ class ApiClient {
  * Export a singleton instance of ApiClient for use throughout the app.
  * This ensures all API calls share the same token and configuration.
  */
-export const apiClient = new ApiClient(API_BASE_URL);
+export const apiClient = new ApiClient(API_BASE_URL || "");

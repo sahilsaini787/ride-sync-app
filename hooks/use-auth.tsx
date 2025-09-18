@@ -83,13 +83,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       const response = await apiClient.login(credentials)
 
       if (response.success) {
-        const { token, user: userData } = response.data
-        apiClient.setToken(token)
-        setUser(userData)
-
+        const { accessToken, refreshToken } = response.data
+        apiClient.setToken(accessToken)
+        // Optionally, fetch user profile after login
+        const profileResp = await apiClient.getUserProfile()
+        if (profileResp.success) {
+          setUser(profileResp.data)
+        } else {
+          setUser(null)
+        }
         // Store refresh token if provided
-        if (response.data.refreshToken) {
-          localStorage.setItem("refresh_token", response.data.refreshToken)
+        if (refreshToken) {
+          localStorage.setItem("refresh_token", refreshToken)
         }
       } else {
         throw new Error(response.message || "Login failed")
