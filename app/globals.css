@@ -16,7 +16,7 @@
   --secondary: oklch(0.98 0.02 85); /* #fffbeb - orange-50 */
   --secondary-foreground: oklch(0.35 0 0); /* #4b5563 */
   --muted: oklch(0.2 0 0 / 0.7); /* rgba(0, 0, 0, 0.7) */
-  --muted-foreground: oklch(1 0 0); /* #ffffff */
+  --muted-foreground: oklch(0.35 0 0); /* #4b5563 */
   --accent: oklch(0.68 0.19 40); /* #f97316 - orange-500 */
   --accent-foreground: oklch(1 0 0); /* #ffffff */
   --destructive: oklch(0.55 0.22 25); /* #dc2626 */

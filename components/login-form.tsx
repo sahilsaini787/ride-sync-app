@@ -2,6 +2,7 @@
 
 import type React from "react"
 import { useState } from "react"
+import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -19,6 +20,7 @@ export function LoginForm({ onSwitchToRegister }: LoginFormProps) {
   })
   const [error, setError] = useState("")
   const { login, isLoading } = useAuth()
+  const router = useRouter()
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -29,6 +31,8 @@ export function LoginForm({ onSwitchToRegister }: LoginFormProps) {
         username: formData.username,
         password: formData.password,
       })
+      // Redirect to ridepage after successful login
+      router.push("/rides")
     } catch (err) {
       setError(err instanceof Error ? err.message : "Login failed")
     }
