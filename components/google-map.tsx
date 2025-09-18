@@ -13,9 +13,10 @@ interface Member {
 
 interface GoogleMapProps {
   members: Member[]
+  apiKey: string
 }
 
-export function GoogleMap({ members }: GoogleMapProps) {
+export function GoogleMap({ members, apiKey }: GoogleMapProps) {
   const mapRef = useRef<HTMLDivElement>(null)
   const mapInstanceRef = useRef<any | null>(null)
   const markersRef = useRef<Map<string, any>>(new Map())
@@ -23,13 +24,13 @@ export function GoogleMap({ members }: GoogleMapProps) {
   useEffect(() => {
     // Load Google Maps script
     const loadGoogleMaps = () => {
-      if (window.google) {
+      if ((window as any).google) {
         initializeMap()
         return
       }
 
       const script = document.createElement("script")
-      script.src = `https://maps.googleapis.com/maps/api/js?key=YOUR_GOOGLE_MAPS_API_KEY&libraries=places`
+      script.src = `https://maps.googleapis.com/maps/api/js?key=${apiKey}&libraries=places`
       script.async = true
       script.defer = true
       script.onload = initializeMap
@@ -40,7 +41,7 @@ export function GoogleMap({ members }: GoogleMapProps) {
       if (!mapRef.current) return
 
       // Initialize map centered on San Francisco (default location)
-      const map = new window.google.maps.Map(mapRef.current, {
+      const map = new (window as any).google.maps.Map(mapRef.current, {
         zoom: 13,
         center: { lat: 37.7749, lng: -122.4194 },
         styles: [
@@ -88,12 +89,12 @@ export function GoogleMap({ members }: GoogleMapProps) {
         existingMarker.setPosition(member.location)
       } else {
         // Create new marker
-        const marker = new window.google.maps.Marker({
+        const marker = new (window as any).google.maps.Marker({
           position: member.location,
           map: map,
           title: member.name,
           icon: {
-            path: window.google.maps.SymbolPath.CIRCLE,
+            path: (window as any).google.maps.SymbolPath.CIRCLE,
             scale: 8,
             fillColor: getMarkerColor(member.status),
             fillOpacity: 1,
@@ -103,7 +104,7 @@ export function GoogleMap({ members }: GoogleMapProps) {
         })
 
         // Add info window
-        const infoWindow = new window.google.maps.InfoWindow({
+        const infoWindow = new (window as any).google.maps.InfoWindow({
           content: `
             <div class="p-2">
               <h3 class="font-semibold">${member.name}</h3>
@@ -124,7 +125,7 @@ export function GoogleMap({ members }: GoogleMapProps) {
 
     // Adjust map bounds to fit all markers
     if (members.length > 0) {
-      const bounds = new window.google.maps.LatLngBounds()
+      const bounds = new (window as any).google.maps.LatLngBounds()
       members.forEach((member) => {
         bounds.extend(member.location)
       })
@@ -161,7 +162,7 @@ export function GoogleMap({ members }: GoogleMapProps) {
   return (
     <div className="w-full h-full relative">
       <div ref={mapRef} className="w-full h-full" />
-      {!window.google && (
+      {!(window as any).google && (
         <div className="absolute inset-0 flex items-center justify-center bg-secondary">
           <div className="text-center">
             <div className="text-lg font-medium mb-2">Loading Map...</div>

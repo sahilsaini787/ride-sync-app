@@ -31,8 +31,13 @@ export default function RidesPage() {
     return null
   }
 
-  // Provide a stub for onSelectRide (can be expanded later)
-  const handleSelectRide = () => {}
+  // Start ride: navigate to ride page with group/ride info
+  const handleSelectRide = (ride: any) => {
+    // Example: navigate to /rides/start?groupId=ride.id
+    if (ride && ride.id) {
+      window.location.href = `/rides/start?groupId=${ride.id}`
+    }
+  }
 
   return <RideManagement currentUser={user} onSelectRide={handleSelectRide} />
 }

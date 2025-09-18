@@ -6,6 +6,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { MapPin, Users, LogOut, Settings, Bell, ArrowLeft, RefreshCw } from "lucide-react"
 import { GoogleMap } from "@/components/google-map"
+
+const GOOGLE_MAPS_API_KEY = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || "YOUR_GOOGLE_MAPS_API_KEY"
 import { AlertCenter } from "@/components/alert-center"
 import { LocationTracker } from "@/components/location-tracker"
 import { useAlertSystem } from "@/hooks/use-alert-system"
@@ -58,6 +60,24 @@ export function MapDashboard({ ride, currentUser, onBackToRides }: MapDashboardP
     }
   }, [updateError])
 
+  // Anomaly detection: alert if any member hasn't updated location in >5 minutes
+  useEffect(() => {
+    if (!rideMembers || rideMembers.length === 0) return
+    const now = Date.now()
+    rideMembers.forEach((member) => {
+      if (
+        member.lastLocationUpdate &&
+        now - new Date(member.lastLocationUpdate).getTime() > 5 * 60 * 1000 // 5 minutes
+      ) {
+        addAlert(
+          `Location anomaly: ${member.user.name} has not updated location for over 5 minutes`,
+          "warning",
+          10000
+        )
+      }
+    })
+  }, [rideMembers, addAlert])
+
   const initializeRide = async () => {
     try {
       setLoading(true)
@@ -66,8 +86,10 @@ export function MapDashboard({ ride, currentUser, onBackToRides }: MapDashboardP
         // Create a new ride for this group
         const response = await apiClient.createRide({
           groupId: ride.id,
-          destination: "Default Destination", // You might want to add a destination input
-          startTime: new Date().toISOString(),
+          name: ride.name || "Group Ride",
+          description: ride.description || "",
+          startLocation: "",
+          endLocation: "",
         })
 
         if (response.success) {
@@ -189,7 +211,9 @@ export function MapDashboard({ ride, currentUser, onBackToRides }: MapDashboardP
             <MapPin className="h-6 w-6 text-primary" />
             <div>
               <h1 className="text-xl font-bold text-primary">{ride.name}</h1>
-              <p className="text-xs text-muted-foreground">→ {activeRide.destination}</p>
+              <p className="text-xs text-muted-foreground">
+                {activeRide.endLocation ? `→ ${activeRide.endLocation}` : ""}
+              </p>
             </div>
           </div>
         </div>
@@ -281,16 +305,18 @@ export function MapDashboard({ ride, currentUser, onBackToRides }: MapDashboardP
         {/* Main map area */}
         <main className="flex-1 relative">
           <GoogleMap
-            members={rideMembers.map((member) => ({
-              id: member.id,
-              name: member.user.name,
-              username: member.user.username,
-              email: member.user.email,
-              status: member.status,
-              location:
-                member.latitude && member.longitude ? { lat: member.latitude, lng: member.longitude } : undefined,
-              lastUpdate: new Date(member.lastLocationUpdate || Date.now()),
-            }))}
+            apiKey={GOOGLE_MAPS_API_KEY}
+            members={rideMembers
+              .filter((member) => typeof member.latitude === "number" && typeof member.longitude === "number")
+              .map((member) => ({
+                id: member.id,
+                name: member.user.name,
+                username: member.user.username,
+                email: member.user.email,
+                status: member.status,
+                location: { lat: member.latitude, lng: member.longitude },
+                lastUpdate: new Date(member.lastLocationUpdate || Date.now()),
+              }))}
           />
         </main>
       </div>
